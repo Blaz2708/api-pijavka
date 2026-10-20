@@ -3,31 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Pijavka - All-in-One Proxy</title>
+    <title>API Pijavka - Monetization Dashboard</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 40px; text-align: center; }
-        .container { max-width: 800px; margin: 0 auto; background: #1e293b; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
-        h1 { color: #38bdf8; }
-        .endpoint { background: #334155; padding: 15px; margin: 10px 0; border-radius: 8px; text-align: left; font-family: monospace; }
-        .btn { display: inline-block; margin-top: 20px; background: #22c55e; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; }
-        .btn:hover { background: #16a34a; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0d1117;
+            color: #c9d1d9;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #161b22;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        }
+        h1 { color: #58a6ff; text-align: center; }
+        .stats-box {
+            background: #21262d;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+        .stat-item h3 { margin: 0; color: #8b949e; font-size: 14px; }
+        .stat-item p { margin: 5px 0 0; font-size: 24px; font-weight: bold; color: #3fb950; }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        button {
+            background: #238636;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        button:hover { background: #2ea043; }
+        .output-box {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            padding: 15px;
+            border-radius: 6px;
+            min-height: 120px;
+            max-height: 250px;
+            overflow-y: auto;
+            font-family: monospace;
+            color: #58a6ff;
+            white-space: pre-wrap;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>API Pijavka All-in-One Proxy</h1>
-        <p>Zmogljiv in varen proxy vmesnik za dostop do AI orodij, spletnih podatkov in kripto financ.</p>
-        
-        <h2>Razpoložljive poti (Endpoints):</h2>
-        <div class="endpoint">GET /api/ai-wrapper — Zahteve za AI/besedilo</div>
-        <div class="endpoint">GET /api/scraping — Sledenje spletnim podatkom</div>
-        <div class="endpoint">GET /api/crypto — Kripto in finančni podatki</div>
-        <div class="endpoint">GET /stats — Statistika delovanja</div>
 
-        <h2>Cenik</h2>
-        <p>Mikro-plačilo: <strong>0.10 $</strong> na klic prek varnega avtorizacijskega žetona.</p>
-        
-        <a href="https://buy.stripe.com/tvoj-stripe-link" class="btn" target="_blank">Kupi API dostop</a>
+<div class="container">
+    <h1>🪱 API Pijavka Dashboard</h1>
+    <p style="text-align: center; color: #8b949e;">Napredni All-in-One posredovalni in monetizacijski sistem</p>
+
+    <div class="stats-box">
+        <div class="stat-item">
+            <h3>SKUPAJ ZAHTEVKOV</h3>
+            <p id="totalReq">0</p>
+        </div>
+        <div class="stat-item">
+            <h3>SKUPAJ ZASLUŽEK</h3>
+            <p id="totalRev">$0.00</p>
+        </div>
     </div>
+
+    <div class="grid">
+        <button onclick="testEndpoint('/api/omni-collector')">🕷️ Omni Collector (E-commerce/Trendi)</button>
+        <button onclick="testEndpoint('/api/social-media?platform=tiktok')">📱 Social Media (TikTok/IG/YT)</button>
+        <button onclick="testEndpoint('/api/crypto')">📈 Kripto Trgi v Živo</button>
+        <button onclick="testEndpoint('/stats')">💰 Osveži Statistiko</button>
+    </div>
+
+    <h3>Rezultat izvajanja / Odgovor API-ja:</h3>
+    <div id="output" class="output-box">Klikni na gumb zgoraj za testiranje...</div>
+</div>
+
+<script>
+    async function testEndpoint(url) {
+        const outputDiv = document.getElementById('output');
+        outputDiv.innerText = "Nalaganje in obdelava...";
+        try {
+            const res = await fetch(url);
+            const data = await res.json();
+            outputDiv.innerText = JSON.stringify(data, null, 2);
+            refreshStats();
+        } catch (err) {
+            outputDiv.innerText = "Napaka pri klicu poti: " + err;
+        }
+    }
+
+    async function refreshStats() {
+        try {
+            const res = await fetch('/stats');
+            const data = await res.json();
+            document.getElementById('totalReq').innerText = data.stats.totalRequests;
+            document.getElementById('totalRev').innerText = "$" + data.stats.revenueUsd.toFixed(2);
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    // Osveži statistiko ob nalaganju strani
+    refreshStats();
+</script>
+
 </body>
 </html>
