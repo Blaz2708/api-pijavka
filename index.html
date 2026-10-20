@@ -3,25 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Pijavka - Live Aggressive Dashboard</title>
+    <title>API Pijavka - Direct Monetization</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0d1117; color: #c9d1d9; margin: 0; padding: 20px; }
         .container { max-width: 900px; margin: 0 auto; background: #161b22; padding: 30px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
         h1 { color: #58a6ff; text-align: center; }
+        .buy-box { background: #238636; color: white; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 25px; }
+        .buy-btn { background: #ffffff; color: #238636; border: none; padding: 12px 25px; font-size: 18px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 10px; }
+        .buy-btn:hover { background: #f0f0f0; }
         .stats-box { background: #21262d; padding: 20px; border-radius: 8px; margin-bottom: 25px; display: flex; justify-content: space-around; text-align: center; }
         .stat-item h3 { margin: 0; color: #8b949e; font-size: 13px; }
         .stat-item p { margin: 5px 0 0; font-size: 28px; font-weight: bold; color: #3fb950; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
-        button { background: #238636; color: white; border: none; padding: 12px 20px; border-radius: 6px; font-size: 15px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
-        button:hover { background: #2ea043; }
-        .output-box { background: #0d1117; border: 1px solid #30363d; padding: 15px; border-radius: 6px; min-height: 150px; max-height: 280px; overflow-y: auto; font-family: monospace; color: #58a6ff; white-space: pre-wrap; }
+        button.action-btn { background: #21262d; color: #c9d1d9; border: 1px solid #30363d; padding: 12px; border-radius: 6px; font-size: 15px; cursor: pointer; font-weight: bold; }
+        button.action-btn:hover { background: #30363d; }
+        .output-box { background: #0d1117; border: 1px solid #30363d; padding: 15px; border-radius: 6px; min-height: 120px; font-family: monospace; color: #58a6ff; white-space: pre-wrap; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🚀 API Pijavka - Live Turbo Motor</h1>
-    <p style="text-align: center; color: #8b949e;">Samodejno črpanje in monetizacija v ozadju deluje 24/7</p>
+    <h1>💳 API Pijavka - Monetizacija & Stripe</h1>
+
+    <div class="buy-box">
+        <h2>Kupi API Kredite / Premium Dostop</h2>
+        <p>10.00 USD za 1.000 API Klicateljskih Kreditev</p>
+        <button class="buy-btn" onclick="buyCredits()">💳 Plati zdaj s kartico (Stripe)</button>
+    </div>
 
     <div class="stats-box">
         <div class="stat-item">
@@ -35,26 +43,36 @@
     </div>
 
     <div class="grid">
-        <button onclick="testEndpoint('/api/omni-collector')">🕷️ Omni Collector</button>
-        <button onclick="testEndpoint('/api/social-media')">📱 Social Media</button>
-        <button onclick="testEndpoint('/api/crypto')">📈 Kripto Trgi</button>
-        <button onclick="refreshStats()">🔄 Osveži Podatke</button>
+        <button class="action-btn" onclick="testEndpoint('/api/omni-collector')">🕷️ Test Omni Collector</button>
+        <button class="action-btn" onclick="testEndpoint('/api/social-media')">📱 Test Social Media</button>
+        <button class="action-btn" onclick="testEndpoint('/api/scraping')">🌐 Test Web Scraper</button>
+        <button class="action-btn" onclick="testEndpoint('/api/crypto')">📈 Test Kripto Trgi</button>
     </div>
 
     <h3>Zadnji dogodki in logi v živo:</h3>
-    <div id="output" class="output-box">Nalaganje sistema...</div>
+    <div id="output" class="output-box">Pripravljen...</div>
 </div>
 
 <script>
-    async function testEndpoint(url) {
+    async function buyCredits() {
         try {
-            const res = await fetch(url);
+            const res = await fetch('/create-checkout-session', { method: 'POST' });
             const data = await res.json();
-            document.getElementById('output').innerText = JSON.stringify(data, null, 2);
-            refreshStats();
-        } catch (err) {
-            console.error(err);
+            if (data.url) {
+                window.location.href = data.url; 
+            } else {
+                alert("Napaka pri ustvarjanju plačila.");
+            }
+        } catch (e) {
+            alert("Napaka: " + e);
         }
+    }
+
+    async function testEndpoint(url) {
+        const res = await fetch(url);
+        const data = await res.json();
+        document.getElementById('output').innerText = JSON.stringify(data, null, 2);
+        refreshStats();
     }
 
     async function refreshStats() {
@@ -63,8 +81,6 @@
             const data = await res.json();
             document.getElementById('totalReq').innerText = data.stats.totalRequests;
             document.getElementById('totalRev').innerText = "$" + data.stats.revenueUsd.toFixed(2);
-            
-            // Izpiši zadnje loge
             let logText = JSON.stringify(data.stats.logs.slice(0, 5), null, 2);
             document.getElementById('output').innerText = logText;
         } catch (e) {
@@ -72,7 +88,6 @@
         }
     }
 
-    // Samodejno osveževanje zaslona vsake 3 sekunde, da gledaš kako raste denar!
     setInterval(refreshStats, 3000);
     refreshStats();
 </script>
