@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="sl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,21 +23,21 @@
 <body>
 
 <div class="container">
-    <h1>💳 API Pijavka - Monetizacija & Stripe</h1>
+    <h1>💳 API Pijavka - Direct Monetization Engine</h1>
 
     <div class="buy-box">
-        <h2>Kupi API Kredite / Premium Dostop</h2>
-        <p>10.00 USD za 1.000 API Klicateljskih Kreditev</p>
-        <button class="buy-btn" onclick="buyCredits()">💳 Plati zdaj s kartico (Stripe)</button>
+        <h2>Buy API Credits / Premium Access</h2>
+        <p>$10.00 USD for 1,000 API Request Credits</p>
+        <button class="buy-btn" onclick="buyCredits()">💳 Pay Now via Card (Stripe)</button>
     </div>
 
     <div class="stats-box">
         <div class="stat-item">
-            <h3>SKUPAJ ZAHTEVKOV</h3>
+            <h3>TOTAL REQUESTS</h3>
             <p id="totalReq">0</p>
         </div>
         <div class="stat-item">
-            <h3>SKUPAJ ZASLUŽEK (USD)</h3>
+            <h3>TOTAL REVENUE (USD)</h3>
             <p id="totalRev">$0.00</p>
         </div>
     </div>
@@ -46,11 +46,11 @@
         <button class="action-btn" onclick="testEndpoint('/api/omni-collector')">🕷️ Test Omni Collector</button>
         <button class="action-btn" onclick="testEndpoint('/api/social-media')">📱 Test Social Media</button>
         <button class="action-btn" onclick="testEndpoint('/api/scraping')">🌐 Test Web Scraper</button>
-        <button class="action-btn" onclick="testEndpoint('/api/crypto')">📈 Test Kripto Trgi</button>
+        <button class="action-btn" onclick="testEndpoint('/api/crypto')">📈 Test Crypto Markets</button>
     </div>
 
-    <h3>Zadnji dogodki in logi v živo:</h3>
-    <div id="output" class="output-box">Pripravljen...</div>
+    <h3>Live System Logs & Events:</h3>
+    <div id="output" class="output-box">Ready...</div>
 </div>
 
 <script>
@@ -61,10 +61,10 @@
             if (data.url) {
                 window.location.href = data.url; 
             } else {
-                alert("Napaka pri ustvarjanju plačila.");
+                alert("Payment creation failed. Check backend configuration.");
             }
         } catch (e) {
-            alert("Napaka: " + e);
+            alert("Error: " + e);
         }
     }
 
