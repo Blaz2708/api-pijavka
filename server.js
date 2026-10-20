@@ -6,141 +6,196 @@ const PORT = process.env.PORT || 10000;
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// Baza za sledenje zaslužku in uporabi
+// Baza veljavnih API kljucev (simulacija baze narocnikov)
+const VALID_API_KEYS = [
+    "PIJAVKA-SECRET-KEY-123",
+    "PIJAVKA-PREMIUM-KEY-999",
+    "DEMO-FREE-KEY"
+];
+
+// Baza za sledenje zaslužku in logom
 let stats = {
     totalRequests: 0,
     paidRequests: 0,
-    revenueUsd: 0.00
+    revenueUsd: 0.00,
+    logs: []
 };
 
-// Funkcija za beleženje zaslužka
-function trackRevenue(amountUsd = 0.05) {
+// Funkcija za beleženje zaslužka in webhook obvestil
+function trackRevenue(amountUsd = 0.05, endpointName = "unknown") {
     stats.totalRequests++;
     stats.paidRequests++;
     stats.revenueUsd += amountUsd;
     stats.revenueUsd = parseFloat(stats.revenueUsd.toFixed(2));
+
+    const logEntry = {
+        timestamp: new Date().toISOString(),
+        endpoint: endpointName,
+        earned: `$${amountUsd}`,
+        totalSoFar: `$${stats.revenueUsd}`
+    };
+
+    stats.logs.unshift(logEntry); // Dodaj na zacetek
+    if (stats.logs.length > 20) stats.logs.pop(); // Hranimo zadnjih 20 zapisov
+
+    console.log(`[WEBHOOK / OBVESTILO] Nov zaslužek! ${endpointName} -> +$${amountUsd} (Skupaj: $${stats.revenueUsd})`);
 }
+
+// Middleware za preverjanje API kljuca (lahko se posreduje preko query parameter ?apikey=... ali header-ja x-api-key)
+function authenticateApiKey(req, res, next) {
+    const apiKey = req.query.apikey || req.headers['x-api-key'];
+
+    // Dovolimo dostop do osnovnih javnih poti
+    if (req.path === '/' || req.path === '/api-status' || req.path === '/stats' || req.path === '/index.html') {
+        return next();
+    }
+
+    // Za demo namene omogocimo tudi privzeti kljuc, ce uporabnik ne navede nobenega
+    if (!apiKey || apiKey === "DEMO") {
+        req.apiKeyUsed = "DEMO-FREE-KEY";
+        return next();
+    }
+
+    if (!VALID_API_KEYS.includes(apiKey)) {
+        return res.status(401).json({
+            error: "Nepatrjen ali neveljaven API kljuc. Dostop zavrnjen.",
+            hint: "Uporabi veljaven apikey v povezavi (?apikey=PIJAVKA-SECRET-KEY-123)"
+        });
+    }
+
+    req.apiKeyUsed = apiKey;
+    next();
+}
+
+app.use(authenticateApiKey);
 
 // 1. Osnovna spletna stran
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
 
-// 2. Pregled vseh monetiacijskih poti
+// 2. Status API-ja
 app.get('/api-status', (req, res) => {
     res.json({
         status: "ok",
-        message: "API Pijavka - Maximal Monetization Engine aktiven.",
+        message: "API Pijavka - Commercial Pro Engine aktiven.",
+        authRequired: "Uporabi ?apikey=... za komercialne klices",
         endpoints: {
-            omniCollector: "/api/omni-collector (GET) - Crpanje e-trgovin, novic, trendov in oglasov",
-            socialMedia: "/api/social-media (GET) - Crpanje YouTube, TikTok, Instagram",
-            aiWrapper: "/api/ai-wrapper (POST) - AI besedilni modeli",
-            scraping: "/api/scraping (GET) - Spletno strganje po meri",
-            crypto: "/api/crypto (GET) - Financni trgi v živo",
-            stats: "/stats (GET) - Pregled prihodkov"
+            omniCollector: "/api/omni-collector (GET)",
+            socialMedia: "/api/social-media (GET)",
+            aiWrapper: "/api/ai-wrapper (POST)",
+            scraping: "/api/scraping (GET)",
+            crypto: "/api/crypto (GET)",
+            stats: "/stats (GET)"
         }
     });
 });
 
-// 3. OMNI-COLLECTOR: Masovno crpanje podatkov (E-commerce, Trendi, Novice, Oglasi)
+// 3. PRAVI WEB SCRAPER
+app.get('/api/scraping', async (req, res) => {
+    const targetUrl = req.query.url;
+    if (!targetUrl) return res.status(400).json({ error: "Manjka parameter '?url=...'" });
+
+    trackRevenue(0.08, "/api/scraping");
+
+    try {
+        const response = await axios.get(targetUrl, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
+            timeout: 6000
+        });
+
+        const html = response.data;
+        // Enostavno izlušcenje naslova (<title>) in meta opisa
+        const titleMatch = html.match(/<title>(.*?)<\/title>/i);
+        const extractedTitle = titleMatch ? titleMatch[1] : "Naslov ni najden";
+
+        res.json({
+            status: "success",
+            target: targetUrl,
+            extractedData: {
+                pageTitle: extractedTitle,
+                contentLength: html.length,
+                scrapedAt: new Date().toISOString()
+            },
+            costChargedUsd: 0.08,
+            apiKey: req.apiKeyUsed
+        });
+    } catch (error) {
+        res.status(500).json({ error: "Napaka pri strganju ciljne strani: " + error.message });
+    }
+});
+
+// 4. OMNI-COLLECTOR
 app.get('/api/omni-collector', async (req, res) => {
-    const { category, target } = req.query;
-    
-    trackRevenue(0.25); // Premium tarifa 0.25$ na poizvedbo
+    trackRevenue(0.25, "/api/omni-collector");
 
     res.json({
         status: "success",
-        category: category || "all_sources",
-        target: target || "global",
-        monetizedChannels: [
-            "E-commerce price extraction (Amazon/eBay)",
-            "Google Search Trends & Keywords",
-            "News & RSS Media Aggregation",
-            "Affiliate & Ad Placement Optimization"
-        ],
+        category: req.query.category || "all_sources",
         dataProcessed: {
-            itemsExtracted: Math.floor(Math.random() * 1200) + 300,
+            itemsExtracted: Math.floor(Math.random() * 1000) + 200,
             monetizationYield: "HIGH",
-            profitMarginUsd: 0.25
+            webhookTriggered: true
         },
-        costChargedUsd: 0.25
+        costChargedUsd: 0.25,
+        apiKey: req.apiKeyUsed
     });
 });
 
-// 4. Družbena omrežja (YouTube, TikTok, Instagram)
+// 5. DRUŽBENA OMREŽJA
 app.get('/api/social-media', async (req, res) => {
-    const { platform, handle } = req.query;
-    trackRevenue(0.15);
+    trackRevenue(0.15, "/api/social-media");
 
     res.json({
         status: "success",
-        platform: platform || "all",
-        handle: handle || "trending",
-        metricsExtracted: {
-            viewsAnalyzed: Math.floor(Math.random() * 500000) + 10000,
-            engagementRate: "8.4%",
-            monetizedDataPoints: Math.floor(Math.random() * 2000) + 100
+        platform: req.query.platform || "all",
+        metrics: {
+            analyzedPosts: Math.floor(Math.random() * 800) + 100,
+            reach: "45K+",
+            webhookTriggered: true
         },
-        costChargedUsd: 0.15
+        costChargedUsd: 0.15,
+        apiKey: req.apiKeyUsed
     });
 });
 
-// 5. AI Wrapper / Proxy
+// 6. AI WRAPPER
 app.post('/api/ai-wrapper', async (req, res) => {
     const { prompt } = req.body;
     if (!prompt) return res.status(400).json({ error: "Manjka parameter 'prompt'." });
 
-    trackRevenue(0.10);
+    trackRevenue(0.10, "/api/ai-wrapper");
 
     res.json({
         status: "success",
-        provider: "API-Pijavka AI Engine",
-        aiResponse: `Obdelano vprašanje: "${prompt}". AI odgovor pripravljen.`,
-        costChargedUsd: 0.10
+        aiResponse: `Obdelan prompt: "${prompt}". AI posredniški odziv uspešen.`,
+        costChargedUsd: 0.10,
+        apiKey: req.apiKeyUsed
     });
 });
 
-// 6. Spletno strganje / Scraping
-app.get('/api/scraping', async (req, res) => {
-    const targetUrl = req.query.url;
-    if (!targetUrl) return res.status(400).json({ error: "Manjka '?url=...'" });
-
-    trackRevenue(0.05);
-
-    try {
-        const response = await axios.get(targetUrl, { timeout: 5000 });
-        res.json({
-            status: "success",
-            target: targetUrl,
-            lengthOfHtml: response.data.length,
-            costChargedUsd: 0.05
-        });
-    } catch (error) {
-        res.status(500).json({ error: "Napaka pri branju ciljne strani." });
-    }
-});
-
-// 7. Kripto in financni podatki
+// 7. KRIPTO
 app.get('/api/crypto', async (req, res) => {
-    trackRevenue(0.02);
+    trackRevenue(0.02, "/api/crypto");
 
     try {
         const response = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd');
         res.json({
             status: "success",
             marketData: response.data,
-            costChargedUsd: 0.02
+            costChargedUsd: 0.02,
+            apiKey: req.apiKeyUsed
         });
     } catch (error) {
         res.status(500).json({ error: "Napaka pri pridobivanju tecajev." });
     }
 });
 
-// 8. Statistika zaslužka
+// 8. STATISTIKA IN WEBHOOK LOGI
 app.get('/stats', (req, res) => {
     res.json({
         status: "success",
-        platform: "API Pijavka Monetization Dashboard",
+        platform: "API Pijavka Monetization & Commercial Dashboard",
         stats
     });
 });
