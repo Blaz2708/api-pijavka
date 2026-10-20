@@ -1,79 +1,60 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="sl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Pijavka - Global Monetization Dashboard</title>
+    <title>API Pijavka - Live Aggressive Dashboard</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0d1117; color: #c9d1d9; margin: 0; padding: 20px; }
-        .container { max-width: 950px; margin: 0 auto; background: #161b22; padding: 30px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
-        h1 { color: #58a6ff; text-align: center; margin-bottom: 5px; }
-        .subtitle { text-align: center; color: #8b949e; margin-bottom: 25px; }
+        .container { max-width: 900px; margin: 0 auto; background: #161b22; padding: 30px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+        h1 { color: #58a6ff; text-align: center; }
         .stats-box { background: #21262d; padding: 20px; border-radius: 8px; margin-bottom: 25px; display: flex; justify-content: space-around; text-align: center; }
-        .stat-item h3 { margin: 0; color: #8b949e; font-size: 13px; letter-spacing: 1px; }
-        .stat-item p { margin: 5px 0 0; font-size: 26px; font-weight: bold; color: #3fb950; }
+        .stat-item h3 { margin: 0; color: #8b949e; font-size: 13px; }
+        .stat-item p { margin: 5px 0 0; font-size: 28px; font-weight: bold; color: #3fb950; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
         button { background: #238636; color: white; border: none; padding: 12px 20px; border-radius: 6px; font-size: 15px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
         button:hover { background: #2ea043; }
-        input { width: calc(100% - 24px); padding: 10px; margin-bottom: 10px; background: #0d1117; border: 1px solid #30363d; color: #c9d1d9; border-radius: 6px; }
-        .output-box { background: #0d1117; border: 1px solid #30363d; padding: 15px; border-radius: 6px; min-height: 140px; max-height: 280px; overflow-y: auto; font-family: monospace; color: #58a6ff; white-space: pre-wrap; }
+        .output-box { background: #0d1117; border: 1px solid #30363d; padding: 15px; border-radius: 6px; min-height: 150px; max-height: 280px; overflow-y: auto; font-family: monospace; color: #58a6ff; white-space: pre-wrap; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🌐 API Pijavka Global Engine</h1>
-    <div class="subtitle">Worldwide Data Extraction & Monetization Network</div>
+    <h1>🚀 API Pijavka - Live Turbo Motor</h1>
+    <p style="text-align: center; color: #8b949e;">Samodejno črpanje in monetizacija v ozadju deluje 24/7</p>
 
     <div class="stats-box">
         <div class="stat-item">
-            <h3>TOTAL REQUESTS</h3>
+            <h3>SKUPAJ ZAHTEVKOV</h3>
             <p id="totalReq">0</p>
         </div>
         <div class="stat-item">
-            <h3>TOTAL REVENUE (USD)</h3>
+            <h3>SKUPAJ ZASLUŽEK (USD)</h3>
             <p id="totalRev">$0.00</p>
         </div>
-        <div class="stat-item">
-            <h3>ACTIVE REGIONS</h3>
-            <p id="activeRegions">GLOBAL</p>
-        </div>
-    </div>
-
-    <div style="margin-bottom: 20px;">
-        <label>Global Web Scraping Target URL:</label>
-        <input type="text" id="scrapeUrl" value="https://news.ycombinator.com" placeholder="https://any-website.com">
-        <button onclick="scrapeRealPage()" style="width: 100%;">🌐 Scrape Any Global Web Page</button>
     </div>
 
     <div class="grid">
-        <button onclick="testEndpoint('/api/omni-collector?apikey=PIJAVKA-GLOBAL-SECRET-123&currency=EUR')">🕷️ Omni Collector (Worldwide)</button>
-        <button onclick="testEndpoint('/api/social-media?platform=all&apikey=PIJAVKA-GLOBAL-SECRET-123')">📱 Social Media Aggregator</button>
-        <button onclick="testEndpoint('/api/crypto?apikey=PIJAVKA-GLOBAL-SECRET-123')">📈 Multi-Currency Markets</button>
-        <button onclick="testEndpoint('/stats')">💰 Refresh Global Stats & Logs</button>
+        <button onclick="testEndpoint('/api/omni-collector')">🕷️ Omni Collector</button>
+        <button onclick="testEndpoint('/api/social-media')">📱 Social Media</button>
+        <button onclick="testEndpoint('/api/crypto')">📈 Kripto Trgi</button>
+        <button onclick="refreshStats()">🔄 Osveži Podatke</button>
     </div>
 
-    <h3>API Response & Global Webhook Activity:</h3>
-    <div id="output" class="output-box">Click any button to test global endpoints...</div>
+    <h3>Zadnji dogodki in logi v živo:</h3>
+    <div id="output" class="output-box">Nalaganje sistema...</div>
 </div>
 
 <script>
     async function testEndpoint(url) {
-        const outputDiv = document.getElementById('output');
-        outputDiv.innerText = "Executing global request...";
         try {
             const res = await fetch(url);
             const data = await res.json();
-            outputDiv.innerText = JSON.stringify(data, null, 2);
+            document.getElementById('output').innerText = JSON.stringify(data, null, 2);
             refreshStats();
         } catch (err) {
-            outputDiv.innerText = "Error: " + err;
+            console.error(err);
         }
-    }
-
-    async function scrapeRealPage() {
-        const url = document.getElementById('scrapeUrl').value;
-        testEndpoint(`/api/scraping?url=${encodeURIComponent(url)}&apikey=PIJAVKA-GLOBAL-SECRET-123`);
     }
 
     async function refreshStats() {
@@ -82,11 +63,17 @@
             const data = await res.json();
             document.getElementById('totalReq').innerText = data.stats.totalRequests;
             document.getElementById('totalRev').innerText = "$" + data.stats.revenueUsd.toFixed(2);
+            
+            // Izpiši zadnje loge
+            let logText = JSON.stringify(data.stats.logs.slice(0, 5), null, 2);
+            document.getElementById('output').innerText = logText;
         } catch (e) {
             console.error(e);
         }
     }
 
+    // Samodejno osveževanje zaslona vsake 3 sekunde, da gledaš kako raste denar!
+    setInterval(refreshStats, 3000);
     refreshStats();
 </script>
 
