@@ -22,7 +22,7 @@ let stats = {
     logs: []
 };
 
-// Funkcija za bele엁nje zaslu엒a
+// Funkcija za bele탑enje zaslu탑ka
 function trackRevenue(amountUsd = 0.05, endpointName = "unknown") {
     stats.totalRequests++;
     stats.paidRequests++;
@@ -42,7 +42,7 @@ function trackRevenue(amountUsd = 0.05, endpointName = "unknown") {
     console.log(`[PIJAVKA AUTO-EARN] +$${amountUsd} via ${endpointName} (Skupaj: $${stats.revenueUsd})`);
 }
 
-// ?? AVTOMATSKI MOTOR V OZADJU (Samodejno polni zaslu엁k vsakih 10 sekund, da 쉞evec raste na polno!)
+// ?? AVTOMATSKI MOTOR V OZADJU (Samodejno polni zaslu탑ek vsakih 10 sekund, da 큄tevec raste na polno!)
 setInterval(() => {
     const endpoints = ["/api/omni-collector", "/api/social-media", "/api/scraping", "/api/crypto"];
     const randomEndpoint = endpoints[Math.floor(Math.random() * endpoints.length)];
@@ -76,8 +76,14 @@ app.get('/api-status', (req, res) => {
 });
 
 app.get('/api/scraping', async (req, res) => {
-    trackRevenue(0.08, "/api/scraping");
-    res.json({ status: "success", scraped: true, costChargedUsd: 0.08 });
+  const clientKey = req.headers['x-api-key'] || req.query.key;
+  
+  if (!clientKey || clientKey !== process.env.API_PIJAVKA_KEY) {
+    return res.status(401).json({ status: "error", message: "Neveljaven ali manjkajo훾 API klju훾" });
+  }
+
+  trackRevenue(0.08, "/api/scraping");
+  res.json({ status: "success", scraped: true, costChargedUsd: 0.08 });
 });
 
 app.get('/api/omni-collector', async (req, res) => {
